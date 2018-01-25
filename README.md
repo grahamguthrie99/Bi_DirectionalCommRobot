@@ -4,6 +4,14 @@ Hand controlled robot. Robot performs several functions based on hand movements.
 Purpose:
 
 
+Overview: 
+
+
+Analysis:
+
+
+
+Design:
 
 Process: 
   Glove controls movement
