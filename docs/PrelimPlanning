@@ -1,0 +1,29 @@
+Communication:
+Use NRF24L01 Transceiver for Communication Between Control and Car
+
+Actuators:
+	2 - Microservo motors for wheel movements on car
+	2 - Microservo motors for pan tilt movements
+	1- Laser or other static actuating sensor for data collection 
+	Transceiver set for communication
+ 
+Sensors:
+	Accelerometer for directional hand movements 
+	Button for Laser Light 	
+  Touch Sensor for switch between movement and pan/tilt control
+
+Schematics
+	Glove
+	Robot Chassis
+	Two Wheels
+	Pan Tilt Kit 
+	Laser
+
+
+Process: 
+  Glove controls movement
+  Switch with flex sensor
+  Led tells mode
+  Button press triggers laser
+
+Functions and Program Control
