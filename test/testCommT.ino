@@ -105,11 +105,3 @@ void color (unsigned char red, unsigned char green, unsigned char blue) // the c
   analogWrite(bLight, blue); 
   analogWrite(gLight, green); 
 }
-    }
-  digitalWrite(4, buttonState);
-  Serial.print(buttonState);
-  
-  radio.write(&buttonState, sizeof(buttonState));
-  lastButtonState = buttonState;
-
-}
