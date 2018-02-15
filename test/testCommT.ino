@@ -14,13 +14,23 @@
 RF24 radio(7, 8); // CE, CSN
 
 const byte address[6] = "00001";
-boolean buttonState = 0;
+/*boolean buttonState = 0;
 boolean lastButtonState = 0;
 boolean currentState =0;
 boolean lastState = 0;
 boolean onOff = 0;
-boolean machState = 0;
+boolean machState = 0;*/
 
+//States Array:
+//Used for debouncing state switching
+//button is given 3 spaces in array
+// i-1 holds previous state
+// i tracks button press
+// i+1 holds state of machine
+//OnOff switch starts at states[1]
+//Movement switch starts at states[4]
+
+boolean states[] = {0, 0, 0, 0, 0, 0};
 
 unsigned long lastDebounceTime = 0;  // the last time the output pin was toggled
 unsigned long debounceDelay = 50;
@@ -44,14 +54,15 @@ void loop() {
   /////////////////////////////////
   
   boolean buttonReading = digitalRead(button);
-  turnON(buttonReading);
-  radio.write(&onOff, sizeof(onOff));
-  if(onOff)
+  debounce(buttonReading, 1);
+  radio.write(&states[2], sizeof(states[2]));
+  if(states[2])
   {
-    radio.write(&machState, sizeof(machState));
     boolean stateReading =digitalRead(touchSense);
-    debounceState(stateReading);
-    if(machState ==1){
+    debounce(stateReading, 4);
+    radio.write(&states[5], sizeof(states[5]));
+    
+    if(states[5] ==1){
         color(0,255, 0); 
         Serial.print("MOVE");
     }
@@ -63,13 +74,28 @@ void loop() {
   }
   else{
     color(255, 0, 0);
-    machState = 0;
+    states[5] = 0;
   }
   
 }
 ////////////////////////////////
+void debounce(boolean reading, int i){
+  if (reading != states[i-1]) {
+      lastDebounceTime = millis();
+  }
+  if ((millis() - lastDebounceTime) > debounceDelay) {
+      if (reading != states[i]) {
+         states[i] = reading;
+          if(states[i] == 1){
+            states[i+1] = !(states[i+1]);
+          }
+      }
+  }
+  states[i-1] = reading; 
+}
 ////////////////////////////////
-void turnON(boolean reading){
+
+/*void turnON(boolean reading){
   if (reading != lastButtonState) {
       lastDebounceTime = millis();
   }
@@ -97,7 +123,7 @@ void debounceState(boolean reading){
       }
   }
   lastState = reading; 
-}
+}*/
 ////////////////////////////////
 void color (unsigned char red, unsigned char green, unsigned char blue) // the color generating function 
 { 
