@@ -48,12 +48,15 @@ void setup() {
 
 void loop() {
   /////////////////////////////////
+  //OnOff Switch Read
   boolean buttonReading = digitalRead(button);
   debounce(buttonReading, 1);
   radio.write(&states[2], sizeof(states[2]));
   
   if(states[2])
   {
+    //ON State
+    //Robot State Switch Read 
     boolean stateReading =digitalRead(touchSense);
     debounce(stateReading, 4);
     radio.write(&states[5], sizeof(states[5]));
@@ -70,6 +73,7 @@ void loop() {
    
   }
   else{
+    //OFF State
     color(255, 0, 0);
     states[5] = 0;
   }
