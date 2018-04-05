@@ -19,7 +19,7 @@
 
 //Communication Initialization
 RF24 radio(7, 8); // CE, CSN
-const byte address[6] = "00001";
+const byte addresses[][6] = {"00001", "00002"};
 ///////////////////////////////
 struct controlData {
   byte onOff;
@@ -48,6 +48,7 @@ int yBase = 0;
 //////////////////////
 controlData state;
 /////////////////////
+int distance = 0;
 
 void setup() {
   //Button Setup
@@ -65,13 +66,16 @@ void setup() {
   resetData();
   //Communication Setup
   radio.begin();
-  radio.openWritingPipe(address);
+  radio.openWritingPipe(addresses[1]); // 00001
+  radio.openReadingPipe(1, addresses[0]); // 00002
   radio.setPALevel(RF24_PA_MIN);
   radio.stopListening();
     
 }
 
 void loop() {
+  //Send Data
+  
   
   boolean buttonReading = digitalRead(button);
   debounce(buttonReading, 1);
@@ -118,6 +122,12 @@ void loop() {
   Serial.print("\t"); 
   
   radio.write(&state, sizeof(controlData)); 
+  
+  //Receive Data
+  /*radio.startListening();
+  while (!radio.available());
+  radio.read(&distance, sizeof(distance));
+  Serial.println(distance);*/
 }
 
 
