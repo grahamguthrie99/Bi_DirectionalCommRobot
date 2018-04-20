@@ -13,9 +13,9 @@
 #define gLight 4
 #define rLight 5
 #define touchSense 6
-#define xpin A3                  // x-axis of the accelerometer
+#define xpin A3                 // x-axis of the accelerometer
 #define ypin A2                 // y-axis
-#define zpin A1                 //z-axis
+#define zpin A1                 // z-axis
 
 //Communication Initialization
 RF24 radio(7, 8); // CE, CSN
@@ -66,31 +66,43 @@ void setup() {
   resetData();
   //Communication Setup
   radio.begin();
+  
+  //TWO WAY
   radio.openWritingPipe(addresses[1]); // 00001
   radio.openReadingPipe(1, addresses[0]); // 00002
+  
+  
+  //ONE WAY
+  //const byte address[6] = "00001";
+  //radio.openWritingPipe(address);
   radio.setPALevel(RF24_PA_MIN);
-  radio.stopListening();
+  //radio.stopListening();
     
 }
-
+//potentially move vals inside on off state
 void loop() {
   //Send Data
   
+  timeout(5);
+  radio.stopListening();
   
   boolean buttonReading = digitalRead(button);
   debounce(buttonReading, 1);
   state.onOff = stateControl[2];
+  
   if(state.onOff){
     color(0,255, 0);
+    
     boolean stateReading =digitalRead(touchSense);
     debounce(stateReading, 4);
     state.movePan = stateControl[5];
+    
     if(state.movePan){
       color(0,0,255);
     }
-    
-    getMove();
-    
+    ///////////////
+      getMove();
+    ///////////////
   }
   else{
     color(255, 0, 0);
@@ -102,7 +114,7 @@ void loop() {
     state.right = 0;
     
   }
-  Serial.print("o/f: ");
+  /*Serial.print("o/f: ");
   Serial.print(state.onOff);
   Serial.print("\t"); 
   Serial.print("m/p: ");
@@ -119,18 +131,41 @@ void loop() {
   Serial.print("\t"); 
   Serial.print("right: ");
   Serial.print(state.right);
-  Serial.print("\t"); 
+  Serial.print("\t"); */
   
   radio.write(&state, sizeof(controlData)); 
   
+  
+  
   //Receive Data
-  /*radio.startListening();
-  while (!radio.available());
+  timeout(5);
+  radio.startListening();
+  //Might not need, gives distance of 0if ((!radio.available() )){ Serial.println("WAIT");};
   radio.read(&distance, sizeof(distance));
-  Serial.println(distance);*/
+  Serial.println();
+  Serial.print("Distance: ");Serial.print(distance);
+  Serial.println();
 }
+////////////////////////////////////////
+void timeout(unsigned long del){
+  unsigned long waitTime = 0;
+  unsigned long take = millis();
+  do{
+    waitTime = millis() - take ; 
+  }while(waitTime < del);
+  //Serial.println("Delay");
 
+}
+////////////////////////////////////////
+void microtimeout(unsigned long del){
+  unsigned long waitTime = 0;
+  unsigned long take = micros();
+  do{
+    waitTime = micros() - take ; 
+  }while(waitTime < del);
+  Serial.println("Delay");
 
+}
 
 ////////////////////////////////
 void color (unsigned char red, unsigned char green, unsigned char blue)
