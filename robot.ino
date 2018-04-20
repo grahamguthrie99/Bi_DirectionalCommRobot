@@ -27,9 +27,8 @@ struct controlData {
 };
 
 RF24 radio(7, 8); // CE, CSN
-
 const byte addresses[][6] = {"00001", "00002"};
-
+//const byte address[6] = "00001";
 controlData state;
 
 Servo leftW;  
@@ -37,10 +36,11 @@ Servo rightW;
 Servo rotX;
 //Servo rotY;
 
-long delayTime = 25;
-long prevTime = 0;
-long prevTrigTime =0;
-long pos = 0;
+//long delayTime = 25;
+//long prevTime = 0;
+//long prevTrigTime =0;
+unsigned long pos = 65;
+unsigned long duration = 0;
 int distance =0;
 
 void setup() {
@@ -59,10 +59,13 @@ void setup() {
   
   //Radio COMM
   radio.begin();
+  //TWO WAY
   radio.openWritingPipe(addresses[0]); // 00002
   radio.openReadingPipe(1, addresses[1]); // 00001
+  //ONEWAY
+  //radio.openReadingPipe(0, address);
   radio.setPALevel(RF24_PA_MIN);
-  radio.startListening();
+  //radio.startListening();
   
   rotX.attach(2);
   leftW.attach(3);
@@ -71,41 +74,50 @@ void setup() {
 }
 
 void loop() {
-  //digitalWrite(trig, LOW);
+    
   
-  if((millis() - prevTime) > delayTime){
-    prevTime = millis();
+    
+    timeout(5);
+    radio.startListening();
+    
+    //Clear Position Limits 
+    if(pos == 130)
+      pos--;
+    if(pos == 0)
+      pos++;
+      
     
     //Reveive Data
     if (radio.available()) {
+      //While radio avail
+      
       radio.read(&state, sizeof(controlData));
       
       if(state.onOff){
         if(state.movePan){
-          //Blue: Panoramic Movement
+          
+        //Blue: Panoramic Movement
           color(0,0, 255); 
-         if(state.left){
-            if(pos>=0){
-              pos++;
-            }
+          if(state.left){
+              if((pos<130) && (pos>0)){
+                pos = pos + 1;
+              }
             rotX.write(pos);
-         }
+          }
           else if(state.right){
-            if(pos<=130){
-              pos--;
-            }
+              if((pos<130) && (pos>0)){
+                pos = pos - 1;
+              }
             rotX.write(pos);
          }
          else{
-           rotX.write(pos);
-           
+            rotX.write(pos); 
          }
          
         }
         else{
-          //Green: Wheel Movement 
+        //Green: Wheel Movement 
           color(0,255,0);
-          
           if(state.forwardUp){
             leftW.attach(3);
             rightW.attach(4);
@@ -144,9 +156,9 @@ void loop() {
       }
       
         
-      Serial.print("o/f: ");
-      Serial.print(state.onOff);
-      Serial.print("\t"); 
+      Serial.print("pos: "); Serial.print(pos);
+      Serial.println();
+      /*Serial.print("\t"); 
       Serial.print("m/p: ");
       Serial.print(state.movePan);
       Serial.print("\t");
@@ -161,37 +173,65 @@ void loop() {
       Serial.print("\t"); 
       Serial.print("right: ");
       Serial.print(state.right);
-      Serial.print("\t"); 
+      Serial.print("\t"); */
     }
+    //MAY NOT BE NEEDED: radio is not available 
     else{
+      //Serial.println("pos: ");
+      //Serial.print(pos);
       //color(0, 0, 0);
         state.movePan = 0;
         state.forwardUp = 0;
         state.backDown = 0;
         state.left = 0;
         state.right = 0;
+        
         leftW.detach();
         rightW.detach();
       
     }
-    
+    //leftW.detach();
+    //rightW.detach();
     //Send Data
-    
-  }
-
-  /*if((micros() - prevTrigTime) > 10){
-    prevTrigTime =micros();
+    digitalWrite(trig, LOW);
+    timeout(5);
+    radio.stopListening();
     distance = calcDistance();
-    Serial.print(distance);
-    //radio.write(&distance, sizeof(distance));
-  }*/
-  //delay(100);
+     Serial.print("dis: "); Serial.print(distance);
+    Serial.println();
+    radio.write(&distance, sizeof(distance));
+    
+
 }
+////////////////////////////////////////
+void timeout(unsigned long del){
+  unsigned long waitTime = 0;
+  unsigned long take = millis();
+  do{
+    waitTime = millis() - take ; 
+    
+  }while(waitTime < del);
+  //Serial.println("Delay");
+
+}
+////////////////////////////////////////
+void microtimeout(unsigned long del){
+  unsigned long waitTime = 0;
+  unsigned long take = micros();
+  do{
+    waitTime = micros() - take ; 
+  }while(waitTime < del);
+  //Serial.println("Delay");
+
+}
+
+
 ////////////////////////////////
 int calcDistance(){
   
-    long duration;
+    unsigned long duration;
     digitalWrite(trig, HIGH);
+    microtimeout(10);
     digitalWrite(trig, LOW);
     duration = pulseIn(echo, HIGH);
     return duration*0.034/2;
