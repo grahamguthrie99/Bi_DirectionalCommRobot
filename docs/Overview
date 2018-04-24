@@ -1,0 +1,32 @@
+Communication:
+Use NRF24L01 Transceiver for Communication Between Controller and Car
+
+Actuators:
+	2 - Microservo motors for wheel movements on car
+	1 - Microservo motors for panoramic
+	1- Ultrasonic sensor for data collection 
+	Transceiver set for communication
+ 
+Sensors:
+	Accelerometer for directional movements 
+	Button for state switching 	
+  	Ultrasonic sensor for distance sensting
+
+Schematics
+	Robot Chassis
+	Two Wheels
+	Pan Tilt Kit 
+	Ultrasonic Sensor 
+
+
+Process: 
+  Button switches control state
+  Controller tilt controls movement
+  LED tells mode
+  Robot recives data and moves
+  Ultrasonic sensor runs
+  Robot sends ultrasonic senor data to controller
+  Controller recives data
+  Controller sends data through serial port
+  Processing program recieves data and changes background color 
+
