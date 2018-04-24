@@ -1,6 +1,3 @@
-/*
-
-*/
 // RF24 - Version: Latest 
 #include <RF24.h>
 #include <RF24_config.h>
@@ -21,6 +18,8 @@
 RF24 radio(7, 8); // CE, CSN
 const byte addresses[][6] = {"00001", "00002"};
 ///////////////////////////////
+//Struct tracks states and is 
+//sent to robot
 struct controlData {
   byte onOff;
   byte movePan;
@@ -45,9 +44,9 @@ unsigned long lastDebounceTime = 0;
 unsigned long debounceDelay = 50;
 int xBase = 0;
 int yBase = 0;
-//////////////////////
+//State object
 controlData state;
-/////////////////////
+//Received from robot 
 int distance = 0;
 
 void setup() {
@@ -66,33 +65,26 @@ void setup() {
   resetData();
   //Communication Setup
   radio.begin();
-  
   //TWO WAY
-  radio.openWritingPipe(addresses[1]); // 00001
-  radio.openReadingPipe(1, addresses[0]); // 00002
-  
-  
-  //ONE WAY
-  //const byte address[6] = "00001";
-  //radio.openWritingPipe(address);
+  radio.openWritingPipe(addresses[1]); // Controller Write
+  radio.openReadingPipe(1, addresses[0]); // Controller Read
   radio.setPALevel(RF24_PA_MIN);
-  //radio.stopListening();
+  
     
 }
-//potentially move vals inside on off state
+
 void loop() {
   //Send Data
-  
   timeout(5);
   radio.stopListening();
-  
+  //Read and debounce on off switch
   boolean buttonReading = digitalRead(button);
   debounce(buttonReading, 1);
   state.onOff = stateControl[2];
   
   if(state.onOff){
     color(0,255, 0);
-    
+    //Read and debounce motion button
     boolean stateReading =digitalRead(touchSense);
     debounce(stateReading, 4);
     state.movePan = stateControl[5];
@@ -114,25 +106,7 @@ void loop() {
     state.right = 0;
     
   }
-  /*Serial.print("o/f: ");
-  Serial.print(state.onOff);
-  Serial.print("\t"); 
-  Serial.print("m/p: ");
-  Serial.print(state.movePan);
-  Serial.print("\t");
-  Serial.print("fore: ");
-  Serial.print(state.forwardUp);
-  Serial.print("\t"); 
-  Serial.print("back: ");
-  Serial.print(state.backDown);
-  Serial.print("\t"); 
-  Serial.print("left: ");
-  Serial.print(state.left);
-  Serial.print("\t"); 
-  Serial.print("right: ");
-  Serial.print(state.right);
-  Serial.print("\t"); */
-  
+  //Send data to robot 
   radio.write(&state, sizeof(controlData)); 
   
   
@@ -140,13 +114,16 @@ void loop() {
   //Receive Data
   timeout(5);
   radio.startListening();
-  //Might not need, gives distance of 0if ((!radio.available() )){ Serial.println("WAIT");};
+  //Receive data from robot 
   radio.read(&distance, sizeof(distance));
-  Serial.println();
-  Serial.print("Distance: ");Serial.print(distance);
-  Serial.println();
+  //if distance != 0 then data has been sent 
+  if(distance != 0){
+    Serial.write(distance);
+  }
 }
 ////////////////////////////////////////
+//Delay funtion aids in switching between listening
+//and receiving 
 void timeout(unsigned long del){
   unsigned long waitTime = 0;
   unsigned long take = millis();
@@ -163,7 +140,7 @@ void microtimeout(unsigned long del){
   do{
     waitTime = micros() - take ; 
   }while(waitTime < del);
-  Serial.println("Delay");
+  
 
 }
 
@@ -207,6 +184,9 @@ void debounce(boolean reading, int i){
   stateControl[i-1] = reading; 
 }
 ////////////////////////////////////////
+//Reads accelerometer data and changes 
+//controlData struct values based on 
+//accel values
 void getMove(){
   int curx = analogRead(xpin);
   int cury = analogRead(ypin);
