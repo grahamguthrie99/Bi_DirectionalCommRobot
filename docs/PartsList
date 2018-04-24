@@ -1,15 +1,17 @@
 Parts:
 
 2 - NRF24L01 Transceiver
-4 - Microservo Motors
+3 - Microservo Motors
 1 - Adafruit Robot Chassis 
 1 - Adafruit Pan-Tilt Kit 
 1- Sunfounder Arduino Mega 
-1 - Glove
-1 - Short Flex Sensor
+2 - Pushbuttons 
 1- ADXLl335 Accelerometer
 2 - LEDs 
-1 - Laser
+1 - HC-SR04 Ultrasonic Sensor 
+1 - 9v Battery
+1 - 4AA Battery Pack and Batteries
+
 
 
 
